@@ -25,10 +25,19 @@ def calculate_bra_size(underbust, bust):
 # ---------- BOT HANDLERS ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
+
+    # reset user flow
     user_state[uid] = {"step": "UNDERBUST"}
+
     await update.message.reply_text(
-        "👙 *Perfect Fit*\n\nLet’s find your perfect bra.\n\n"
-        "📏 What is your *underbust measurement* (cm)?",
+        "👙 Welcome to *Perfect Fit* 💖\n\n"
+        "Find your *correct bra size* and get *perfect bra recommendations* in just a few minutes.\n\n"
+        "✨ I’ll help you choose the right bra for:\n"
+        "• Comfort\n"
+        "• Support\n"
+        "• Daily, sports, or special occasions\n\n"
+        "📏 Let’s start with your size.\n"
+        "What is your *underbust measurement (in cm)*?",
         parse_mode="Markdown"
     )
 
