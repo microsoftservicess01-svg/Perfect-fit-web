@@ -33,9 +33,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "👙 *Welcome to Perfect Fit* 💖\n\n"
-        "Find your *correct bra size* and get *perfect bra recommendations* in minutes.\n\n"
-        "📏 Let’s start.\n"
-        "What is your *underbust measurement (in cm)*?",
+        "Find your *correct bra size* and get *perfect bra recommendations*.\n\n"
+        "📏 What is your *underbust measurement (in cm)*?",
         parse_mode="Markdown"
     )
 
@@ -49,24 +48,22 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     step = user_state[uid]["step"]
 
-    # STEP 1: UNDERBUST
     if step == "UNDERBUST":
         if not text.isdigit():
-            await update.message.reply_text("❗ Please enter a number (cm).")
+            await update.message.reply_text("❗ Please enter a number in cm.")
             return
 
         user_state[uid]["underbust"] = int(text)
         user_state[uid]["step"] = "BUST"
 
         await update.message.reply_text(
-            "📐 Great! Now tell me your *bust measurement (in cm)*:",
+            "📐 Now enter your *bust measurement (in cm)*:",
             parse_mode="Markdown"
         )
 
-    # STEP 2: BUST
     elif step == "BUST":
         if not text.isdigit():
-            await update.message.reply_text("❗ Please enter a number (cm).")
+            await update.message.reply_text("❗ Please enter a number in cm.")
             return
 
         under = user_state[uid]["underbust"]
@@ -83,8 +80,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
 
         await update.message.reply_text(
-            f"✅ Your bra size is *{size}*\n\n"
-            "What type of bra are you looking for?",
+            f"✅ Your bra size is *{size}*\n\nWhat type are you looking for?",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
@@ -96,7 +92,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = query.from_user.id
     data = query.data
 
-    # STEP 3: BRA TYPE
     if data.startswith("TYPE_"):
         user_state[uid]["type"] = data.replace("TYPE_", "")
         user_state[uid]["step"] = "PRICE"
@@ -112,13 +107,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    # STEP 4: PRICE → SHOW BRANDS
     elif data.startswith("PRICE_"):
         size = user_state[uid]["size"]
         bra_type = user_state[uid]["type"]
 
         await query.edit_message_text(
-            f"🛍 *Top Bra Recommendations for You*\n\n"
+            f"🛍 *Top Bra Recommendations*\n\n"
             f"👙 Size: *{size}*\n"
             f"🎯 Type: *{bra_type}*\n\n"
             "• **Zivame Cotton Non-Wired** – ₹649\n"
@@ -131,9 +125,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "https://www.amazon.in/s?k=jockey+bra\n\n"
             "• **Hanes Everyday Support** – ₹699\n"
             "https://www.amazon.in/s?k=hanes+bra\n\n"
-            "• **Triumph Premium Fit** – ₹1299\n"
-            "https://www.triumphindia.com/\n\n"
-            "✨ Want to try again? Type /start",
+            "✨ Type /start to try again",
             parse_mode="Markdown"
         )
 
@@ -146,13 +138,14 @@ def health():
 
 # ================= RUN =================
 def run_bot():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
-    app.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+    application.add_handler(CallbackQueryHandler(button_handler))
 
-    app.run_polling()
+    # 🔥 IMPORTANT FIX
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     threading.Thread(target=run_bot, daemon=True).start()
